@@ -1,38 +1,34 @@
 <?php
-include('../models/m_user.php');
-include('base.php');
+require '../models/m_user.php';
+require 'lib/upload.php';
 
-$preEncrypt = $_POST['password'];
+// Ambil data dari form
+$email = $_POST['email'];
+$nama = $_POST['nama'];
+$password = $_POST['password']; // Password belum dienkripsi
+$notelp = $_POST['notelp'];
+$status_langganan = $_POST['status_langganan'];
+$waktu_daftar = $_POST['waktu_daftar'];
+$role = $_POST['role'];
 
-$encryptPass = password_hash($preEncrypt, PASSWORD_BCRYPT);
+// Upload file dan dapatkan path file
+$fotoPath = uploadFoto($_FILES['foto'], "assets/images/profile/");
 
-$targetDir = "assets/images/profile/";
-$fileName = basename($_FILES['foto']["name"]);
-$targetFilePath = $targetDir . $fileName;
-$targetFilePathData = '../'.$targetDir . $fileName;
-$fileType = $_FILES['foto']['type'];
-$file_size = $_FILES['foto']['size'];
-
-move_uploaded_file($_FILES['foto']["tmp_name"], $targetFilePathData);
-
+// Menyusun data untuk dikirim ke API
 $data = [
-    'email' => $_POST['email'],
-    'nama' => $_POST['nama'],
-    'password' => $encryptPass,
-    'notelp' => $_POST['notelp'],
+    'email' => $email,
+    'nama' => $nama,
+    'password' => $password, // Kirim password dalam bentuk asli
+    'notelp' => $notelp,
     'status' => 'aktif',
-    'status_langganan' => $_POST['status_langganan'],
-    'foto' => $targetFilePath,
-    'waktu_daftar' => $_POST['waktu_daftar'],
-    'role' => $_POST['role']
+    'status_langganan' => $status_langganan,
+    'foto' => $fotoPath,
+    'waktu_daftar' => $waktu_daftar,
+    'role' => $role
 ];
 
-// Panggil fungsi insertUser dari fungsi
-$insertedId = insertUser($data);
+// Kirim data ke API
+$response = sendDataToApi($data, $base_url.'/api/data_users.php', 'POST');
 
-if ($insertedId) {
-    echo "Data berhasil disimpan dengan ID: " . $insertedId;
-    redirectToWith('/data_users.php','success');
-} else {
-    redirectToWith('/data_users.php', 'error');
-}
+// Menangani respons dari API
+handleApiResponse($response, '/data_users.php');

@@ -1,13 +1,11 @@
 <?php
-include('controllers/base.php');
+require 'controllers/lib/base.php';
 
-session_start(); // Pastikan session dimulai sebelum melakukan pengecekan session
+session_start();
 
 // Memeriksa apakah user sudah login dengan memeriksa session
 if (!isset($_SESSION['role'])) {
-    redirectTo('/login.php'); // Jika belum login, redirect ke halaman login
+    redirectTo('/login.php'); 
 } else {
-    // Halaman yang memerlukan login, bisa ditampilkan
-    echo "Selamat datang, " . $_SESSION['nama'];
     redirectTo('/dashboard.php');
 }

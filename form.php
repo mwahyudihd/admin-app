@@ -5,20 +5,18 @@ $current_page = 'user';
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Dashboard</title>
-    <!-- Link ke file CSS FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Form - User</title>
     <!-- Link ke file CSS Tailwind atau stylesheet Anda -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <!-- Memuat Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="shortcut icon" href="assets/images/ulbi-icons.png" type="image/x-icon">
 </head>
 <body class="bg-gray-100">
     <!-- Main Wrapper dengan kontrol sidebar -->
     <div class="flex flex-col h-screen" x-data="{ sidebarOpen: true }">
+        <?php require 'components/loading.php'; ?>
 
         <!-- Navigation Bar -->
-        <?php include('components/header.php') ?>
+        <?php require 'components/header.php'; ?>
 
         <!-- Main Content Area, adjusted for sidebar visibility -->
         <div class="w-full h-full overflow-auto">
@@ -90,7 +88,7 @@ $current_page = 'user';
                                 " required />
                             
                             <!-- Custom styled button -->
-                            <a href="#" class="w-full p-2 border rounded bg-orange-500 text-white flex items-center justify-center">
+                            <a href="#" class="w-full p-2 border rounded bg-orange-500 text-white flex items-center justify-center cursor-pointer">
                                 <i class="fas fa-upload mr-2"></i>
                                 Upload Image
                             </a>
@@ -127,7 +125,7 @@ $current_page = 'user';
         </div>
 
         <!-- Footer -->
-        <?php include('components/footer.php') ?>
+        <?php require 'components/footer.php'; ?>
 
     </div>
 </body>

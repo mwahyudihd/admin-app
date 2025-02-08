@@ -5,7 +5,25 @@ const showAlert = (title, message, icon, confirmBtn = true) => Swal.fire({
     icon: icon,
     showConfirmButton: confirmBtn
 });
-const setRemove = (id, ) => Swal.fire({
+
+const confirmAlert = (icon, title, message, isConfirm, isNotConfirm = "") => Swal.fire({
+  title: `${title}`,
+  icon: `${icon}`,
+  text: `${message}`,
+  showCancelButton: true,
+  confirmButtonText: "Logout"
+}).then((result) => {
+  /* Read more about isConfirmed, isDenied below */
+  if (result.isConfirmed) {
+    Swal.fire("logout!", "", "success").then(() => {
+        return isConfirm();
+    });
+  } else {
+    isNotConfirm();
+  }
+});
+
+const setRemove = (id, base) => Swal.fire({
     title: "Are you sure?",
     text: "You won't be able to revert this!",
     icon: "warning",
@@ -15,22 +33,25 @@ const setRemove = (id, ) => Swal.fire({
     confirmButtonText: "Yes, delete it!"
 }).then((result) => {
     if (result.isConfirmed) {
-        fetch(`http://localhost/admin-ulbi/controllers/c_delete_user.php?id_user=${id}`, {
+        fetch(`${base}api/delete_user.php?id_user=${id}`, {
             method: 'GET', // Menggunakan method GET
         })
         .then(response => response.json())
         .then(data => {
             if (data.status == 200) {
+                sessionStorage.setItem('status', 'deleted');
                 showAlert("Deleted!", "Your user data has been deleted.", "success", false);
                 setTimeout(() => {
-                    window.location.href = 'http://localhost/admin-ulbi/data_users.php';
+                    window.location.href = `${base}data_users.php`;
                 }, 1000);
             } else {
-                showAlert("Error!", "There was an error deleting the user.", "error");
+              sessionStorage.setItem("status", "error");
+              showAlert("Error!", "There was an error deleting the user.", "error");
             }
         })
         .catch(error => {
-            showAlert("Error!", "There was an error with the request.", "error")
+          sessionStorage.setItem("status", "error");
+          showAlert("Error!", "There was an error with the request.", "error")
         });
     }
 });

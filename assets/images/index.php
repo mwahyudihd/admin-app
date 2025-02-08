@@ -1,3 +1,3 @@
 <?php
-include('../../controllers/base.php');
+require '../../controllers/lib/base.php';
 redirectToError();

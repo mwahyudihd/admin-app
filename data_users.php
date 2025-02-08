@@ -1,28 +1,23 @@
 <?php
 $current_page = 'user';
-session_start();
+require 'controllers/auth.php';
 ?>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Dashboard</title>
-    <!-- Link ke file CSS FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Table - User</title>
     <!-- Link ke file CSS Tailwind atau stylesheet Anda -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <!-- sweet alert -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Memuat Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="assets/js/alert.js"></script>
+    <link rel="shortcut icon" href="assets/images/ulbi-icons.png" type="image/x-icon">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100" x-data="redirect()">
     <!-- Main Wrapper dengan kontrol sidebar -->
     <div class="flex flex-col h-screen" x-data="{ sidebarOpen: true }">
-
+        
+        <?php require 'components/loading.php'; ?>
         <!-- Navigation Bar -->
-        <?php include('components/header.php') ?>
+        <?php require 'components/header.php'; ?>
 
         <!-- Main Content Area, adjusted for sidebar visibility -->
         <div class="w-full h-full overflow-y-auto">
@@ -32,34 +27,49 @@ session_start();
             <!-- Main Content -->
             <div :class="{'ml-0': !sidebarOpen, 'ml-4': sidebarOpen}" class="flex-1 p-6 bg-gray-50 overflow-auto transition-all">
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-semibold">Daftar Semua UKM</h1>
+                    <h1 class="text-2xl font-semibold">Daftar Semua User</h1>
                     <a href="form.php" class="bg-blue-500 text-white px-4 py-2 rounded">Tambahkan Data</a>
                 </div>
                 <div class="bg-white p-4 rounded shadow-md"
                     x-data="{
-                        users: [],  // Data pengguna
-                        limit: 10,  // Default limit
-                        offset: 0,  // pagination
-                        globalIndex: 1,  // Menambahkan variabel untuk nomor urut global
+                        users: [],
+                        limit: 10,
+                        offset: 0,
+                        globalIndex: 1,
+                        searchQuery: '',
                         noNext: false,
                         noPrev: true,
                         fetchUsers() {
-                            let url = `http://localhost/admin-ulbi/controllers/c_data_users.php?entries=${this.limit}&page=${this.offset}&id=<?php echo $_SESSION['user_id']; ?>`;
+                            let url = `${base}api/data_users.php?entries=${this.limit}&page=${this.offset}&id=<?php echo $_SESSION['user_id']; ?>`;
                             fetch(url)
                                 .then(response => response.json())
                                 .then(data => {
-                                    this.users = data;  // Update data pengguna di Alpine.js
+                                    this.users = data;
                                 })
                                 .catch(error => console.error('Error fetching data:', error));
                         },
                         changePage(page) {
                             this.offset = page;
-                            this.globalIndex = page * this.limit + 1; // Update nomor urut global saat halaman berubah
-                            this.fetchUsers();  // Fetch ulang data untuk halaman baru
+                            this.globalIndex = page * this.limit + 1;
+                            this.fetchUsers();
                         },
-                        remove(id){
-                            setRemove(id);
-                        }
+                        remove(id, baseUrl){
+                            setRemove(id, baseUrl);
+                        },
+                        fetchSearchResults() {
+                            if (this.searchQuery.trim() === '') {
+                                this.users = null;
+                                this.fetchUsers();
+                            } else {
+                                let url = `${base}api/search_user.php?id_user=<?= ($_SESSION['user_id']) ? $_SESSION['user_id'] : null ?>&q=${this.searchQuery}`;
+                                fetch(url)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        this.users = data;  // Update data berdasarkan hasil pencarian
+                                    })
+                                    .catch(error => console.error('Error fetching search data:', error));
+                            }
+                        },
                     }" x-init="fetchUsers()" 
                 >
                     <div class="flex justify-between items-center mb-4 overflow-x-auto">
@@ -77,7 +87,14 @@ session_start();
                         </div>
                         <div class="flex items-center">
                             <label class="mr-2" for="search">Search:</label>
-                            <input class="border rounded p-1" id="search" type="text"/>
+                            <input 
+                                class="border rounded p-1" 
+                                id="search" 
+                                type="text"
+                                x-model="searchQuery"
+                                @keyup="fetchSearchResults()"
+                                placeholder="Enter Name"
+                            />
                         </div>
                     </div>
                     
@@ -109,11 +126,11 @@ session_start();
                                         <td class="py-2 px-4 border-b" x-text="user.email"></td>
                                         <td class="py-2 px-4 border-b" x-text="user.notelp"></td>
                                         <td class="py-2 px-4 border-b" x-text="user.status_langganan"></td>
-                                        <td class="py-2 px-4 border-b" x-text="user.waktu_daftar || 'N/A'"></td>
+                                        <td class="py-2 px-4 border-b" x-text="dateConvert(user.waktu_daftar) || 'N/A'"></td>
                                         <td class="flex py-2 px-4 border-b text-center">
-                                            <button class="text-green-500"><i class="fas fa-search"></i> Detail</button>
-                                            <button class="text-yellow-500 ml-2"><i class="fas fa-edit"></i></button>
-                                            <button class="text-red-500 ml-2" id="user.id" @click="remove(user.id)"><i class="fas fa-trash"></i></button>
+                                            <button class="text-green-500" @click="getTo(`detail_user.php?id=${user.id}`)"><i class="fas fa-search"></i> Detail</button>
+                                            <button class="text-yellow-500 ml-2" @click="getTo(`detail_user.php?id=${user.id}&edit`)"><i class="fas fa-edit"></i></button>
+                                            <button class="text-red-500 ml-2" id="user.id" @click="remove(user.id, base)"><i class="fas fa-trash"></i></button>
                                         </td>
                                     </tr>
                                 </template>
@@ -131,34 +148,9 @@ session_start();
         </div>
 
         <!-- Footer -->
-        <?php include('components/footer.php') ?>
+        <?php require 'components/footer.php'; ?>
 
     </div>
-    <?php if (isset($_SESSION['status']) && $_SESSION['status'] == 'success') { ?>
-        <script>
-            showAlert("Berhasil!", "Data berhasil ditambahkan!", "success", false);
-            setTimeout(() => {
-                <?php $_SESSION['status'] = null; ?>
-            }, 1000);
-        </script>
-
-    <?php } ?>
-    <?php if (isset($_SESSION['status']) && $_SESSION['status'] == 'deleted') { ?>
-        <script>
-            showAlert("User terhapus!", "Data user berhasil dihapus!", "success");
-            setTimeout(() => {
-                <?php $_SESSION['status'] = null; ?>
-            }, 1000);
-        </script>
-
-    <?php } ?>
-    <?php if (isset($_SESSION['status']) && $_SESSION['status'] == 'error') { ?>
-        <script>
-            showAlert("Ops!", "Data gagal dimuat!", "error");
-            setTimeout(() => {
-                <?php $_SESSION['status'] = null; ?>
-            }, 1000);
-        </script>
-    <?php } ?>
+    <script src="assets/js/flashSession.js"></script>
 </body>
 </html>

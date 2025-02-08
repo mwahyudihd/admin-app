@@ -1,4 +1,4 @@
 <?php 
-include('base.php');
+require 'lib/base.php';
 
 redirectToError();
