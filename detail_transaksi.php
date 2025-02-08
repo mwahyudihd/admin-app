@@ -47,11 +47,11 @@ require 'controllers/auth.php';
             },
             setAdminFee(cost){
                 const percentage = 0.15; //15%
-                return percentage * cost;
+                return percentage * Math.round(cost);
             },
             reduceByAdminFee(cost){
                 const percentage = 0.15; //15%
-                return cost - (percentage * cost);
+                return Math.round(cost) - (percentage * Math.round(cost));
             }
         }" x-init="fetchTr()"
         >

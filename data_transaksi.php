@@ -117,7 +117,7 @@ require 'controllers/auth.php';
                             const result = list.join('');
                             return result;
                         },
-                        reduceByAdminFee: (cost) => cost - (0.15 * cost)
+                        reduceByAdminFee: (cost) => Math.round(cost) - (0.15 * Math.round(cost))
                     }" x-init="fetchTr()"
                 >
                     <div class="flex justify-between items-center mb-4 overflow-x-auto">
@@ -197,7 +197,7 @@ require 'controllers/auth.php';
                                         <td class="py-2 px-4 border-b text-center" x-text="globalIndex + index"></td>
                                         <td class="py-2 px-4 border-b" x-text="row.kode"></td>
                                         <td class="py-2 px-4 border-b" x-text="row.nama_customer"></td>
-                                        <td class="py-2 px-4 border-b" x-text="`Rp. ${currency(reduceByAdminFee(row.total_harga))}`"></td>
+                                        <td class="py-2 px-4 border-b" ><span x-text="`Rp. ${currency(reduceByAdminFee(row.total_harga))} `"></span><span class="font-bold">(-15%)</span></td>
                                         <td class="py-2 px-4 border-b" x-text="setNormalWord(row.status)"></td>
                                         <td class="flex py-2 px-4 border-b text-center">
                                             <button class="text-green-500" @click="getTo(`detail_transaksi.php?id=${row.id}`)"><i class="fas fa-search"></i> Detail</button>
